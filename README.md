@@ -84,14 +84,14 @@ rm -rf /etc/systemd/system/naive.service /usr/local/naive/
    Create a new configuration file naive.json, examples: [naive.json](naive.json)
 
    ```bash
-   docker pull jonssonyan/naive
+   docker pull ghcr.io/jonssonyan/naive
 
    docker run -d \
      --name naive --restart always \
      --network=host \
      -v /naive/html/:/naive/html/ \
      -v /naive/config/:/naive/config/ \
-     jonssonyan/naive \
+     ghcr.io/jonssonyan/naive \
      ./naive run --config /naive/naive.json
    ```
 
@@ -99,7 +99,7 @@ Uninstall
 
 ```bash
 docker rm -f naive
-docker rmi jonssonyan/naive
+docker rmi ghcr.io/jonssonyan/naive
 rm -rf /naive
 ```
 
