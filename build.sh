@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 
-caddy_version=
+caddy_version="${1:-}"
 
 # Error handling function
 handle_error() {
