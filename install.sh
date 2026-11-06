@@ -3,6 +3,7 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 
 naive_systemd_version="${1:-latest}"
 naive_docker_version=":${naive_systemd_version#v}"
+naive_docker_image="ghcr.io/jonssonyan/naive"
 
 init_var() {
   ECHO_TYPE="echo -e"
@@ -1481,13 +1482,13 @@ EOF
 
   set_naive_docker
 
-  docker pull jonssonyan/naive"${naive_docker_version}" &&
+  docker pull "${naive_docker_image}${naive_docker_version}" &&
     docker run -d \
       --name naive --restart always \
       --network=host \
       -v /naive/html/:/naive/html/ \
       -v /naive/config/:/naive/config/ \
-      jonssonyan/naive"${naive_docker_version}" \
+      "${naive_docker_image}${naive_docker_version}" \
       ./naive run --config ${naive_config_docker}
   echo_content skyBlue "---> naive install successful"
 }
@@ -1511,20 +1512,15 @@ upgrade_naive_docker() {
 
   echo_content green "---> Upgrade naive"
   docker rm -f naive
-  docker rmi jonssonyan/naive
+  docker images "${naive_docker_image}" -q | xargs -r docker rmi -f
 
-  pull_version=":latest"
-  if ! version_ge "${current_version}" "v2.7.6"; then
-    pull_version=":2.7.5"
-  fi
-
-  docker pull jonssonyan/naive"${pull_version}" &&
+  docker pull "${naive_docker_image}:latest" &&
     docker run -d \
       --name naive --restart always \
       --network=host \
       -v /naive/html/:/naive/html/ \
       -v /naive/config/:/naive/config/ \
-      jonssonyan/naive"${pull_version}" \
+      "${naive_docker_image}:latest" \
       ./naive run --config ${naive_config_docker}
   echo_content skyBlue "---> naive upgrade successful"
 }
@@ -1541,7 +1537,7 @@ uninstall_naive_docker() {
 
   echo_content green "---> Uninstall naive"
   docker rm -f naive
-  docker images jonssonyan/naive -q | xargs -r docker rmi -f
+  docker images "${naive_docker_image}" -q | xargs -r docker rmi -f
   rm -rf /naive/
   echo_content skyBlue "---> naive uninstall successful"
 }

@@ -2,7 +2,7 @@ version: '3'
 
 services:
   naive:
-    image: jonssonyan/naive
+    image: ghcr.io/jonssonyan/naive
     container_name: naive
     restart: always
     network_mode: host
