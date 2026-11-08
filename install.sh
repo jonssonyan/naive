@@ -424,8 +424,8 @@ set_naive_auto_lt276() {
                     {
                       "handle": [
                         {
-                          "auth_pass_deprecated": "${naive_username}",
-                          "auth_user_deprecated": "${naive_password}",
+                          "auth_pass_deprecated": "${naive_password}",
+                          "auth_user_deprecated": "${naive_username}",
                           "handler": "forward_proxy",
                           "hide_ip": true,
                           "hide_via": true,
@@ -692,8 +692,8 @@ set_naive_custom_lt276() {
                     {
                       "handle": [
                         {
-                          "auth_pass_deprecated": "${naive_username}",
-                          "auth_user_deprecated": "${naive_password}",
+                          "auth_pass_deprecated": "${naive_password}",
+                          "auth_user_deprecated": "${naive_username}",
                           "handler": "forward_proxy",
                           "hide_ip": true,
                           "hide_via": true,
@@ -843,6 +843,22 @@ EOF
   echo_content skyBlue "---> naive install successful"
 }
 
+# Convert auth_user_deprecated/auth_pass_deprecated (< v2.7.6) to auth_credentials
+migrate_naive_auth() {
+  local config="$1"
+  grep -q '"auth_user_deprecated"' "${config}" || return 0
+
+  local auth_user auth_pass auth
+  auth_user=$(sed -n 's/.*"auth_user_deprecated": *"\([^"]*\)".*/\1/p' "${config}")
+  auth_pass=$(sed -n 's/.*"auth_pass_deprecated": *"\([^"]*\)".*/\1/p' "${config}")
+  auth=$(echo -n "${auth_user}:${auth_pass}" | base64 | tr --delete '\n' | base64 | tr --delete '\n')
+
+  cp "${config}" "${config}.bak" &&
+    sed -i -e '/"auth_pass_deprecated"/d' \
+      -e "s|\"auth_user_deprecated\": *\"[^\"]*\"|\"auth_credentials\": [\"${auth}\"]|" "${config}"
+  echo_content skyBlue "---> Migrated auth to auth_credentials, backup: ${config}.bak"
+}
+
 upgrade_naive_systemd() {
   if ! systemctl list-units --type=service --all | grep -q 'naive.service'; then
     echo_content red "---> naive not installed"
@@ -861,10 +877,9 @@ upgrade_naive_systemd() {
     systemctl stop naive
   fi
 
+  migrate_naive_auth "${naive_config_systemd}"
+
   bin_url=https://github.com/jonssonyan/naive/releases/latest/download/naive-linux-${get_arch}
-  if ! version_ge "${current_version}" "v2.7.6"; then
-    bin_url=https://github.com/jonssonyan/naive/releases/download/v2.7.5/naive-linux-${get_arch}
-  fi
 
   curl -fsSL "${bin_url}" -o /usr/local/naive/naive &&
     chmod +x /usr/local/naive/naive &&
@@ -1092,8 +1107,8 @@ set_naive_docker_auto_lt276() {
                     {
                       "handle": [
                         {
-                          "auth_pass_deprecated": "${naive_username}",
-                          "auth_user_deprecated": "${naive_password}",
+                          "auth_pass_deprecated": "${naive_password}",
+                          "auth_user_deprecated": "${naive_username}",
                           "handler": "forward_proxy",
                           "hide_ip": true,
                           "hide_via": true,
@@ -1360,8 +1375,8 @@ set_naive_docker_custom_lt276() {
                     {
                       "handle": [
                         {
-                          "auth_pass_deprecated": "${naive_username}",
-                          "auth_user_deprecated": "${naive_password}",
+                          "auth_pass_deprecated": "${naive_password}",
+                          "auth_user_deprecated": "${naive_username}",
                           "handler": "forward_proxy",
                           "hide_ip": true,
                           "hide_via": true,
@@ -1528,6 +1543,8 @@ upgrade_naive_docker() {
   echo_content green "---> Upgrade naive"
   docker rm -f naive
   docker images "${naive_docker_image}" -q | xargs -r docker rmi -f
+
+  migrate_naive_auth "${naive_config_docker}"
 
   docker pull "${naive_docker_image}:latest" &&
     docker run -d \
