@@ -895,7 +895,7 @@ uninstall_naive_systemd() {
     exit 0
   fi
 
-  read -r -p "Delete camouflage page ${NAIVE_DATA_SYSTEMD}html/? [y/N]: " delete_html
+  read -r -p "Keep camouflage page ${NAIVE_DATA_SYSTEMD}html/? [y/N]: " keep_html
 
   echo_content green "---> Uninstall naive"
   if [[ $(systemctl is-active naive) == "active" ]]; then
@@ -905,11 +905,11 @@ uninstall_naive_systemd() {
     rm -f /etc/systemd/system/naive.service &&
     systemctl daemon-reload &&
     systemctl reset-failed
-  if [[ "${delete_html}" == [yY]* ]]; then
-    rm -rf ${NAIVE_DATA_SYSTEMD}
-  else
+  if [[ "${keep_html}" == [yY]* ]]; then
     find ${NAIVE_DATA_SYSTEMD} -mindepth 1 -maxdepth 1 ! -name html -exec rm -rf {} +
     echo_content yellow "---> Camouflage page kept: ${NAIVE_DATA_SYSTEMD}html/"
+  else
+    rm -rf ${NAIVE_DATA_SYSTEMD}
   fi
   echo_content skyBlue "---> naive uninstall successful"
 }
@@ -1578,16 +1578,16 @@ uninstall_naive_docker() {
     exit 0
   fi
 
-  read -r -p "Delete camouflage page ${NAIVE_DATA_DOCKER}html/? [y/N]: " delete_html
+  read -r -p "Keep camouflage page ${NAIVE_DATA_DOCKER}html/? [y/N]: " keep_html
 
   echo_content green "---> Uninstall naive"
   docker rm -f naive
   docker images "${naive_docker_image}" -q | xargs -r docker rmi -f
-  if [[ "${delete_html}" == [yY]* ]]; then
-    rm -rf ${NAIVE_DATA_DOCKER}
-  else
+  if [[ "${keep_html}" == [yY]* ]]; then
     find ${NAIVE_DATA_DOCKER} -mindepth 1 -maxdepth 1 ! -name html -exec rm -rf {} +
     echo_content yellow "---> Camouflage page kept: ${NAIVE_DATA_DOCKER}html/"
+  else
+    rm -rf ${NAIVE_DATA_DOCKER}
   fi
   echo_content skyBlue "---> naive uninstall successful"
 }
