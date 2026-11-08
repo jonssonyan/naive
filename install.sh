@@ -1456,7 +1456,7 @@ set_naive_docker() {
   [[ -z "${naive_username}" ]] && naive_username="sysadmin"
   read -r -p "Please enter the password of naive (default: sysadmin): " naive_password
   [[ -z "${naive_password}" ]] && naive_password="sysadmin"
-  naive_auth=$(echo -n "${naive_username}:${naive_password}" | base64 | base64)
+  naive_auth=$(echo -n "${naive_username}:${naive_password}" | base64 | tr --delete '\n' | base64)
 
   read -r -p "Enable HTTP/3 (QUIC)? [Y/n]: " naive_h3
   [[ "${naive_h3}" == [nN]* ]] && naive_protocols='"h1", "h2"'
