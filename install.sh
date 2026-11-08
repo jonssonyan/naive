@@ -30,6 +30,7 @@ init_var() {
   naive_username="sysadmin"
   naive_password="sysadmin"
   naive_auth=""
+  naive_protocols='"h1", "h2", "h3"'
 }
 
 echo_content() {
@@ -275,6 +276,7 @@ set_naive_auto() {
           "listen": [
             ":${naive_port}"
           ],
+          "protocols": [${naive_protocols}],
           "routes": [
             {
               "handle": [
@@ -412,6 +414,7 @@ set_naive_auto_lt276() {
           "listen": [
             ":${naive_port}"
           ],
+          "protocols": [${naive_protocols}],
           "routes": [
             {
               "handle": [
@@ -549,6 +552,7 @@ set_naive_custom() {
           "listen": [
             ":${naive_port}"
           ],
+          "protocols": [${naive_protocols}],
           "routes": [
             {
               "handle": [
@@ -678,6 +682,7 @@ set_naive_custom_lt276() {
           "listen": [
             ":${naive_port}"
           ],
+          "protocols": [${naive_protocols}],
           "routes": [
             {
               "handle": [
@@ -760,6 +765,9 @@ set_naive() {
   read -r -p "Please enter the password of naive (default: sysadmin): " naive_password
   [[ -z "${naive_password}" ]] && naive_password="sysadmin"
   naive_auth=$(echo -n "${naive_username}:${naive_password}" | base64 | tr --delete '\n' | base64)
+
+  read -r -p "Enable HTTP/3 (QUIC)? [Y/n]: " naive_h3
+  [[ "${naive_h3}" == [nN]* ]] && naive_protocols='"h1", "h2"'
 
   while read -r -p "Please select the management certificate method(1/auto 2/custom default: 1): " naive_ssl_method; do
     if [[ -z "${naive_ssl_method}" || ${naive_ssl_method} == 1 ]]; then
@@ -936,6 +944,7 @@ set_naive_docker_auto() {
           "listen": [
             ":${naive_port}"
           ],
+          "protocols": [${naive_protocols}],
           "routes": [
             {
               "handle": [
@@ -1073,6 +1082,7 @@ set_naive_docker_auto_lt276() {
           "listen": [
             ":${naive_port}"
           ],
+          "protocols": [${naive_protocols}],
           "routes": [
             {
               "handle": [
@@ -1210,6 +1220,7 @@ set_naive_docker_custom() {
           "listen": [
             ":${naive_port}"
           ],
+          "protocols": [${naive_protocols}],
           "routes": [
             {
               "handle": [
@@ -1339,6 +1350,7 @@ set_naive_docker_custom_lt276() {
           "listen": [
             ":${naive_port}"
           ],
+          "protocols": [${naive_protocols}],
           "routes": [
             {
               "handle": [
@@ -1421,6 +1433,9 @@ set_naive_docker() {
   read -r -p "Please enter the password of naive (default: sysadmin): " naive_password
   [[ -z "${naive_password}" ]] && naive_password="sysadmin"
   naive_auth=$(echo -n "${naive_username}:${naive_password}" | base64 | base64)
+
+  read -r -p "Enable HTTP/3 (QUIC)? [Y/n]: " naive_h3
+  [[ "${naive_h3}" == [nN]* ]] && naive_protocols='"h1", "h2"'
 
   while read -r -p "Please select the management certificate method(1/auto 2/custom default: 1): " naive_ssl_method; do
     if [[ -z "${naive_ssl_method}" || ${naive_ssl_method} == 1 ]]; then
