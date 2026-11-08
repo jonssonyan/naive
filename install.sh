@@ -82,9 +82,9 @@ version_ge() {
     local part1=${v1_parts[i]:-0}
     local part2=${v2_parts[i]:-0}
 
-    if [[ "$part1" < "$part2" ]]; then
+    if ((10#$part1 < 10#$part2)); then
       return 1
-    elif [[ "$part1" > "$part2" ]]; then
+    elif ((10#$part1 > 10#$part2)); then
       return 0
     fi
   done
@@ -764,7 +764,7 @@ set_naive() {
   [[ -z "${naive_username}" ]] && naive_username="sysadmin"
   read -r -p "Please enter the password of naive (default: sysadmin): " naive_password
   [[ -z "${naive_password}" ]] && naive_password="sysadmin"
-  naive_auth=$(echo -n "${naive_username}:${naive_password}" | base64 | tr --delete '\n' | base64)
+  naive_auth=$(echo -n "${naive_username}:${naive_password}" | base64 | tr --delete '\n' | base64 | tr --delete '\n')
 
   read -r -p "Enable HTTP/3 (QUIC)? [Y/n]: " naive_h3
   [[ "${naive_h3}" == [nN]* ]] && naive_protocols='"h1", "h2"'
@@ -857,8 +857,8 @@ migrate_naive_auth() {
 
   cp "${config}" "${config}.bak" &&
     sed -i -e '/"auth_pass_deprecated"/d' \
-      -e "s|\"auth_user_deprecated\": *\"[^\"]*\"|\"auth_credentials\": [\"${auth}\"]|" "${config}"
-  echo_content skyBlue "---> Migrated auth to auth_credentials, backup: ${config}.bak"
+      -e "s|\"auth_user_deprecated\": *\"[^\"]*\"|\"auth_credentials\": [\"${auth}\"]|" "${config}" &&
+    echo_content skyBlue "---> Migrated auth to auth_credentials, backup: ${config}.bak"
 }
 
 upgrade_naive_systemd() {
@@ -879,12 +879,11 @@ upgrade_naive_systemd() {
     systemctl stop naive
   fi
 
-  migrate_naive_auth "${naive_config_systemd}"
-
   bin_url=https://github.com/jonssonyan/naive/releases/latest/download/naive-linux-${get_arch}
 
   curl -fsSL "${bin_url}" -o /usr/local/naive/naive &&
     chmod +x /usr/local/naive/naive &&
+    migrate_naive_auth "${naive_config_systemd}" &&
     systemctl restart naive
   echo_content skyBlue "---> naive upgrade successful"
 }
@@ -1456,7 +1455,7 @@ set_naive_docker() {
   [[ -z "${naive_username}" ]] && naive_username="sysadmin"
   read -r -p "Please enter the password of naive (default: sysadmin): " naive_password
   [[ -z "${naive_password}" ]] && naive_password="sysadmin"
-  naive_auth=$(echo -n "${naive_username}:${naive_password}" | base64 | tr --delete '\n' | base64)
+  naive_auth=$(echo -n "${naive_username}:${naive_password}" | base64 | tr --delete '\n' | base64 | tr --delete '\n')
 
   read -r -p "Enable HTTP/3 (QUIC)? [Y/n]: " naive_h3
   [[ "${naive_h3}" == [nN]* ]] && naive_protocols='"h1", "h2"'
