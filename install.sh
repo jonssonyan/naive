@@ -1554,9 +1554,8 @@ upgrade_naive_docker() {
   docker rm -f naive
   docker images "${naive_docker_image}" -q | xargs -r docker rmi -f
 
-  migrate_naive_auth "${naive_config_docker}"
-
   docker pull "${naive_docker_image}:latest" &&
+    migrate_naive_auth "${naive_config_docker}" &&
     docker run -d \
       --name naive --restart always \
       --network=host \
